@@ -377,4 +377,292 @@ head(pinguins_left_join)
 # setequal(x, y): retorna se x e y são iguais e quais suas diferenças
 
 
-stringr() ----
+# stringr() ----
+# Fornece um conjunto de funções para a manipulação de caracteres ou strings. Para funções mais específicas, recomenda-se usar o pacote stringi, que fornece um conjunto mais abrangente de funções. As funções do stringr podem ser agrupadas em algumas operações para tarefas específicas como: i) correspondência de padrões, ii) retirar e acrescentar espaços em branco, iii) mudar maiúsculas e minúsculas, além de muitas outras operações com caracteres.
+
+## Comprimento
+stringr::str_length(string = "penguins")
+
+## Extrair pela posição
+stringr::str_sub(string = "penguins", end = 3)
+
+## Extrair por padrão
+stringr::str_extract(string = "penguins", pattern = "p")
+
+## Substituir
+stringr::str_replace(string = "penguins", pattern = "i",replacement = "y")
+
+## Separar
+stringr::str_split(string = "p-e-n-g-u-i-n-s", pattern = "-", simplify = TRUE)
+
+## Inserir espacos em branco
+stringr::str_pad(string = "penguins", width = 10, side = "left")
+
+stringr::str_pad(string = "penguins", width = 10, side = "right")
+
+stringr::str_pad(string = "penguins", width = 10, side = "both")
+
+## Remover espacos em branco
+stringr::str_trim(string = " penguins ", side = "left")
+
+## Alterar minúsculas e maiúsculas
+stringr::str_to_lower(string = "Penguins")
+
+stringr::str_to_upper(string = "penguins")
+
+stringr::str_to_sentence(string = "penGuins")
+
+stringr::str_to_title(string = "penGuins")
+
+## Ordenar
+stringr::str_sort(x = letters)
+
+stringr::str_sort(x = letters, dec = TRUE)
+
+
+## Alterar valores das colunas para minusculo
+pinguins_stringr_valores <- penguins |> 
+  dplyr::mutate(species = stringr::str_to_lower(species))
+
+## Alterar nome das colunas
+pinguins_stringr_nomes <- penguins |> 
+  dplyr::rename_with(stringr::str_to_title)
+
+
+# forcats() ----
+# O pacote forcats fornece um conjunto de ferramentas úteis para facilitar a manipulação de fatores. As funções são utilizadas principalmente para: i) mudar a ordem dos níveis, ii) mudar os valores dos níveis, iii) adicionar e remover níveis, iv) combinar múltiplos níveis, além de outras operações.
+
+## String
+forcats::as_factor(penguins_raw$Species) |> 
+  head()
+
+## Mudar o nome dos níveis
+forcats::fct_recode(penguins$species, a = "Adelie", c = "Chinstrap", g = "Gentoo") |> 
+  head()
+
+## Inverter os níveis
+forcats::fct_rev(penguins$species) |> 
+  head()
+
+## Especificar a ordem dos níveis
+forcats::fct_relevel(penguins$species, "Chinstrap", "Gentoo", "Adelie") |> 
+  head()
+
+# forcats::fct_inorder(): pela ordem em que aparecem pela primeira vez
+# forcats::fct_infreq(): por número de observações com cada nível (decrescente, i.e., o maior primeiro)
+# forcats::fct_inseq(): pelo valor numérico do nível.
+
+## Níveis pela ordem em que aparecem
+forcats::fct_inorder(penguins$species) |> 
+  head()
+
+## Ordem (decrescente) de frequência
+forcats::fct_infreq(penguins$species) |> 
+  head()
+
+## Agregação de níveis raros em um nível
+forcats::fct_lump(penguins$species) |> 
+  head()
+
+## Transformar várias colunas em fator
+pinguins_raw_multi_factor <- penguins_raw |> 
+  dplyr::mutate(across(where(is.character), forcats::as_factor))
+
+
+# lubridate() ----
+# O pacote lubridate fornece um conjunto de funções para a manipulação de dados de data e horário. Existem diversas funções nesse pacote, sendo as mesmas focadas em: i) transformações de data/horário, ii) componentes, iii) arredondamentos, iv) durações, v) períodos, vi) intervalos, além de muitas outras funções específicas.
+
+# Data: tempo em dias, meses e anos <date>
+# Horário: tempo dentro de um dia <time>
+# Data-horário: tempo em um instante (data mais tempo) <dttm>
+
+## Extrair a data nesse instante
+lubridate::today()
+
+## Extrair a data, minuto e segundo nesse instante
+lubridate::now()
+
+## Strings e números para datas - Essa função também aceitam números sem aspas, além de serem muito versáteis e funcionarem em outros diversos formatos.
+lubridate::dmy("03-03-2021")
+lubridate::dmy("03-Mar-2021")
+lubridate::dmy(03032021)
+lubridate::dmy("03032021")
+lubridate::dmy("03/03/2021")
+lubridate::dmy("03.03.2021")
+
+## Especificar horários e fuso horário
+lubridate::dmy_h("03-03-2021 13")
+
+lubridate::dmy_hm("03-03-2021 13:32")
+
+lubridate::dmy_hms("03-03-2021 13:32:01")
+
+lubridate::dmy_hms("03-03-2021 13:32:01", tz = "America/Sao_Paulo")
+
+## Dados com componentes individuais
+dados <- tibble::tibble(ano = c(2021, 2021, 2021),
+                        mes = c(1, 2, 3),
+                        dia = c(12, 20, 31),
+                        hora = c(2, 14, 18),
+                        minuto = c(2, 44, 55))
+
+## Transformando dados em datas
+dados |>
+  dplyr::mutate(data = lubridate::make_datetime(ano, mes, dia, hora, minuto))
+
+## Data para data-horário
+lubridate::as_datetime(today())
+
+## Data-horário para data
+lubridate::as_date(now())
+
+# year(): acessa o ano
+# month(): acessa o mês
+# yday(): acessa o dia do ano
+# mday(): acessa o dia do mês
+# wday(): acessa o dia da semana
+# hour(): acessa as horas
+# minute(): acessa os minutos
+# second(): acessa os segundos
+
+## Extrair
+lubridate::year(lubridate::now())
+
+lubridate::month(lubridate::now())
+
+lubridate::month(lubridate::now(), label = TRUE)
+
+lubridate::day(lubridate::now())
+
+lubridate::wday(lubridate::now())
+
+lubridate::wday(lubridate::now(), label = TRUE)
+
+lubridate::second(lubridate::now())
+
+## Data
+data <- lubridate::dmy_hms("04-03-2021 01:04:56")
+
+## Incluir
+lubridate::year(data) <- 2020
+lubridate::month(data) <- 01
+lubridate::hour(data) <- 13
+
+## Incluir vários valores
+update(data, year = 2020, month = 1, mday = 1, hour = 1)
+
+## Subtração de datas
+tempo_estudando_r <- lubridate::today() - lubridate::dmy("30-11-2019")
+
+## Conversão para duração
+tempo_estudando_r_dur <- lubridate::as.duration(tempo_estudando_r)
+
+## Criando durações
+lubridate::duration(90, "seconds")
+
+lubridate::duration(1.5, "minutes")
+
+lubridate::duration(1, "days")
+
+## Transformação da duração
+lubridate::dseconds(100)
+
+lubridate::dminutes(100)
+
+lubridate::dhours(100)
+
+lubridate::ddays(100)
+
+lubridate::dweeks(100)
+
+lubridate::dyears(100)
+
+## Somando durações a datas
+lubridate::today() + lubridate::ddays(1)
+
+## Subtraindo durações de datas
+lubridate::today() - lubridate::dyears(1)
+
+## Multiplicando durações
+2 * lubridate::dyears(2)
+
+## Criando duas datas - início do namoro e nascimento do meu filho
+n_inicio <- lubridate::dmy_hm("25-07-2014 18:57")
+
+filho_nascimento <- lubridate::dmy_hms("07-09-2023 21:47:43")
+
+
+
+## Criando intervalos - interval namoro
+n_intervalo <- lubridate::interval(n_inicio, lubridate::now())
+
+## Criando intervalos - interval filho
+filho_intervalo <- lubridate::interval(filho_nascimento,lubridate::now())
+
+## Operações com intervalos
+lubridate::int_start(n_intervalo)
+
+lubridate::int_end(n_intervalo)
+
+lubridate::int_length(n_intervalo)
+
+lubridate::int_flip(n_intervalo)
+
+lubridate::int_shift(n_intervalo, lubridate::duration(days = 30))
+
+## Idade exata do meu filho
+lubridate::interval(filho_nascimento,lubridate::now()) |> 
+  lubridate::as.period()
+
+## Tempo exato de namoro
+lubridate::interval(n_inicio,lubridate::now()) |> 
+  lubridate::as.period()
+
+## Fuso horário no R
+Sys.timezone()
+
+
+# purrr() ----
+# O pacote purrr implementa a Programação Funcional no R, fornecendo um conjunto completo e consistente de ferramentas para trabalhar com funções e vetores.
+
+## Loop for com map
+purrr::map(.x = 1:10, .f = print)
+
+# .x: um vetor, lista ou data frame
+# .f: uma função
+
+x <- list(1:5, c(4, 5, 7), c(1, 1, 1), c(2, 2, 2, 2, 2))
+purrr::map(x, sum)
+
+# map(): retorna uma lista
+# map_chr(): retorna um vetor de strings
+# map_dbl(): retorna um vetor numérico (double)
+# map_int(): retorna um vetor numérico (integer)
+# map_lgl(): retorna um vetor lógico
+# map_dfr(): retorna um data frame (por linhas)
+# map_dfc(): retorna um data frame (por colunas)
+
+## Variações da função map
+purrr::map_dbl(x, sum)
+
+purrr::map_chr(x, paste, collapse = " ")
+
+## Listas
+x <- list(3, 5, 0, 1)
+y <- list(3, 5, 0, 1)
+z <- list(3, 5, 0, 1)
+
+## Função map2
+purrr::map2_dbl(x, y, prod)
+
+## Resumo dos dados
+penguins |> 
+  dplyr::select(where(is.numeric)) |> 
+  tidyr::drop_na() |> 
+  purrr::map_dbl(mean)
+
+penguins |> 
+  dplyr::group_split(island, species) |> 
+  purrr::map(~ lm(bill_depth ~ bill_length, data = .x)) |> 
+  purrr::map(summary) |> 
+  purrr::map("r.squared")
