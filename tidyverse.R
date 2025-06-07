@@ -377,4 +377,4 @@ head(pinguins_left_join)
 # setequal(x, y): retorna se x e y são iguais e quais suas diferenças
 
 
-# stringr() ----
+stringr() ----
