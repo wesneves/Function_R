@@ -440,7 +440,7 @@ ggplot(data = dados_ancova, aes(x = Raiz, y = Biomassa,
 # GLS - Mínimos Quadrados Generalizados (Generalized Least Squares)  ----
 #  As técnicas de Generalized Least Squares (GLS) são utilizadas principalmente para lidar com violações dos pressupostos da regressão linear clássica (OLS) — especialmente quando há heterocedasticidade (variância não constante dos resíduos) e/ou correlação entre os erros (como em dados espaciais, temporais ou repetidos).
 
-# Este modelo basicamente assume que a estrutura de covariância é uma função da distância entre as localidades.
+# Este modelo basicamente assume que a estrutura de covariância é uma função da distância entre as localidades.Existem diferentes funções de covariância como a Esférica: corSpher(form=\~lat+long); · Exponencial: corExp(form=\~lat+long); Gaussiana: corGaus(form=\~lat+long); Linear: corLin(form=\~lat+long); Razão quadrática: corRatio(form=\~lat+long).
 
 # Dados
 library(vegan)
@@ -459,3 +459,148 @@ coords <- mite.xy
 colnames(coords) <- c("long", "lat")
 
 mite_dat <- data.frame(riqueza, agua, coords)
+
+# Modelo linear sem incorporar a estrutura espacial
+## Modelo
+linear_model <- lm(riqueza ~ agua, mite_dat)
+
+## Resíduos
+par(mfrow = c(2, 2))
+plot(linear_model, which = 1:4)
+
+## Resultados do modelo
+res_lm <- summary(linear_model)
+
+## Coeficiente de determinação e coeficientes
+res_lm$adj.r.squared
+
+res_lm$coefficients
+
+## Modelo gls sem estrutura espacial (Igual ao linear_model)
+no_spat_gls <- nlme::gls(riqueza ~ agua, mite_dat, method = "REML")
+
+# Uma maneira de identificar se os resíduos do modelo linear apresentam estrutura espacial é fazendo uma figura chamada - variograma--. Se houver estrutura espacial nos resíduos, isso pode afetar: A validez estatística dos testes do modelo (p-values, ICs, etc.); A eficiência das estimativas dos parâmetros; A precisão das predições.
+
+# O variograma é uma ferramenta da geoestatística que mede a semelhança entre valores (neste caso, os resíduos) em função da distância entre os pontos.
+
+#Se os resíduos não têm estrutura espacial, o variograma será aproximadamente plano (sem aumento da semivariância com a distância).
+
+# Se os resíduos têm estrutura espacial, a semivariância aumenta com a distância, indicando que resíduos próximos são mais parecidos entre si do que os distantes.
+
+# O variograma possui três parâmetros: i) nugget, ii) range e iii) sill
+
+# O nugget é utilizado para quantificar a variabilidade observada nos valores menores (ou seja, em pequenas distâncias). 
+
+# O range, por sua vez, é usado para identificar a distância máxima em que a autocorrelação espacial está presente
+
+# A posição limiar que representa claramente a “pausa” no crescimento da curva (range) indica os pontos não correlacionados e representa o sill.
+
+## Variograma
+variog_mod1 <- nlme::Variogram(no_spat_gls, form = ~lat+long,
+                               resType = "normalized")
+
+## Gráfico
+plot(variog_mod1)
+
+## Índice I de Moran
+## Primeiro precisamos calcular uma matriz de distâncias geográficas entre as comunidades
+dat_dist <- rdist::pdist(coords) # matriz de distância
+ape::Moran.I(x = mite_dat$riqueza, w = dat_dist)
+
+# $observed =  # Valor observado do Moran's I
+# $expected =  # Valor esperado sob aleatoriedade
+# $sd       =  # Desvio padrão do valor esperado
+# $p.value  =  # Valor p associado.
+
+# há evidência muito forte de que os dados de riqueza apresentam estrutura espacial negativa, ou seja, valores próximos tendem a ser diferentes entre si — um padrão que pode estar relacionado a gradientes espaciais fortes ou processos de exclusão ecológica local
+
+# O resultado do índice de moran I e o variograma mostra que não podemos utilizar uma análise de regressão simples, pois ele assume independência entre as observações.
+
+# Ajuste do modelo para o melhor variograma
+## Covariância esférica
+espher_model <- nlme::gls(riqueza ~ agua, mite_dat,
+                          nlme::corSpher(form = ~lat+long, nugget = TRUE))
+## Covariância exponencial
+expon_model <- nlme::gls(riqueza ~ agua, mite_dat,
+                         nlme::corExp(form = ~lat+long, nugget = TRUE))
+## Covariância Gaussiana
+gauss_model <- nlme::gls(riqueza ~ agua, mite_dat,
+                         nlme::corGaus(form = ~lat+long, nugget = TRUE))
+## Covariância linear
+cor_linear_model <- nlme::gls(riqueza ~ agua, mite_dat,
+                              nlme::corLin(form = ~lat+long, nugget = TRUE))
+## Covariância razão quadrática
+ratio_model <- nlme::gls(riqueza ~ agua, mite_dat,
+                         nlme::corRatio(form = ~lat+long, nugget = TRUE))
+
+
+# AIC - AIC é um método estatístico que compara os modelos criados na sua pesquisa e seleciona o melhor entre eles.
+
+# Um modelo só será considerado superior a outro quando a diferença entre os seus valores de AIC (i.e, delta) forem maiores do que 2.
+
+aic_fit <- AIC(no_spat_gls, espher_model, expon_model, gauss_model,
+               cor_linear_model, ratio_model)
+
+aic_fit |> 
+  dplyr::arrange(AIC)
+
+## Gráfico
+plot(residuals(ratio_model, type = "normalized") ~ fitted(ratio_model))
+
+## Varigrama
+ratio_variog <- nlme::Variogram(ratio_model, form = ~lat+long,
+                          resType = "normalized")
+
+## Resumo dos modelos
+summary(ratio_model)$tTable
+
+summary(no_spat_gls)$tTable
+
+## Gráficos
+plot(ratio_variog, main = "Variograma como Modelo Ratio")
+
+plot(variog_mod1, main = "Variograma Modelo Normal")
+
+
+# GLM ----
+# Diferentemente do modelo linear, um GLM estima os parâmetros por meio de Máxima Verossimilhança (ML) ao invés dos Mínimos Quadrados Comuns, também chamados de Mínimos Quadrados Ordinários (OLS).
+
+# Um GLM relaciona a distribuição da variável resposta aos preditores lineares por meio de uma função de ligação.
+
+## Dados Contínuos
+
+## Gaussiana (Normal) -   Y é uma variável contínua
+
+## Gamma - Y é uma variável contínua, mas só aceita valores contínuos positivos.
+
+## Beta - Y é uma variável de proporção que varia continuamente entre 0 e 1 ou 0 e 100, mas não inclui 0 nem 1.
+
+## Dados de Contagem
+
+## Binomial - Y é binário (e.g., vivo ou morto). a variância deve ser igual à média e o parâmetro de dispersão é sempre 1.
+
+## Poisson - Y é uma contagem (e.g., abundância ou riqueza de espécies). a variância deve ser igual à média e o parâmetro de dispersão é sempre 1.
+
+## Bionomial Negativa - Y é uma contagem (e.g., abundância ou riqueza de espécies). Quando a variância > média (ou seja, há superdispersão).
+
+## quasi-Poisson ou quasi-Negative binomial - não permite o uso do AIC
+
+## Zero-inflated Poisson ou Zero-inflated NB - Se além da sobredispersão houver muitos zeros nos dados.
+
+# Poisson ----
+# Descrita apenas por um parâmetro livre (λ), dessa forma a variância tem que ser igual a média.
+
+# Pergunta - A distância linear para o corpo d’água mais próximo influencia a abundância total de espécies de anuros?
+
+# Dados
+fragmentos <- ecodados::fragmentos
+
+## Explorar os dados
+dplyr::glimpse(fragmentos)
+
+## Gráfico
+ggplot(fragmentos, aes(dfrag, Riqueza_obs)) +
+  geom_point(size = 4, alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  labs(x = "Distância para o fragmento mais próximo",
+       y = "Riqueza observada")
