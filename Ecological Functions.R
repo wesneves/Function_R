@@ -29,14 +29,22 @@ car::leveneTest(CRC ~ as.factor(Estacao), data = CRC_PN_macho)
 t.test(CRC ~ Estacao, data = CRC_PN_macho, var.equal = TRUE)
 
 ## Gráfico
-ggplot(data = CRC_PN_macho, aes(x = Estacao, 
-                                y = CRC, color = Estacao)) +
-  labs(x = "Estações",
-       y = expression(paste("CRC (mm) - ", italic("P. nattereri")))) +
-  geom_boxplot(fill = c("darkorange", "cyan4"), color = "black",
-             outlier.shape = NA) +
-  geom_jitter(shape = 16, position = position_jitter(0.1),
-              cex = 5, alpha = 0.7) +
+ggplot(data = CRC_PN_macho, aes(
+  x = Estacao,
+  y = CRC, color = Estacao
+)) +
+  labs(
+    x = "Estações",
+    y = expression(paste("CRC (mm) - ", italic("P. nattereri")))
+  ) +
+  geom_boxplot(
+    fill = c("darkorange", "cyan4"), color = "black",
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    shape = 16, position = position_jitter(0.1),
+    cex = 5, alpha = 0.7
+  ) +
   scale_color_manual(values = c("black", "black")) +
   theme(legend.position = "none")
 
@@ -71,7 +79,7 @@ t.test(CRC ~ Estacao, data = CRC_LP_femea, var.equal = FALSE)
 # Premissas do Teste t para amostras pareadas
 # As unidades amostrais são selecionadas aleatoriamente
 # As observações não são independentes
-# Distribuição normal (gaussiana) dos valores da diferença para cada par 
+# Distribuição normal (gaussiana) dos valores da diferença para cada par
 # Pergunta - A riqueza de espécies de artrópodes é prejudicada pelas queimadas?
 
 # Dados
@@ -84,11 +92,13 @@ t.test(Riqueza_Pre_Queimada, Riqueza_Pos_Queimada, paired = TRUE)
 
 ## Gráfico
 library(ggpubr)
-ggpaired(Pareado, x = "Estado", y = "Riqueza",
-         color = "Estado", line.color = "gray", line.size = 0.8,
-         palette = c("darkorange", "cyan4"), width = 0.5,
-         point.size = 4, xlab = "Estado das localidades",
-         ylab = "Riqueza de Espécies") +
+ggpaired(Pareado,
+  x = "Estado", y = "Riqueza",
+  color = "Estado", line.color = "gray", line.size = 0.8,
+  palette = c("darkorange", "cyan4"), width = 0.5,
+  point.size = 4, xlab = "Estado das localidades",
+  ylab = "Riqueza de Espécies"
+) +
   expand_limits(y = c(0, 150))
 
 
@@ -107,17 +117,25 @@ correlacao_arbustos <- ecodados::correlacao
 
 ## Correlação de Pearson
 cor.test(correlacao_arbustos$Tamanho_raiz,
-         correlacao_arbustos$Tamanho_tronco, method = "pearson")
+  correlacao_arbustos$Tamanho_tronco,
+  method = "pearson"
+)
 
 ## Gráfico
-ggplot(data = correlacao_arbustos, aes(x = Tamanho_raiz,
-                                       y = Tamanho_tronco)) +
+ggplot(data = correlacao_arbustos, aes(
+  x = Tamanho_raiz,
+  y = Tamanho_tronco
+)) +
   labs(x = "Tamanho da raiz (m)", y = "Altura do tronco (m)") +
   geom_point(size = 4, shape = 21, fill = "darkorange", alpha = 0.7) +
-  geom_text(x = 14, y = 14, label = "r = 0.89, P < 0.001",
-            color = "black", size = 5) +
-  geom_smooth(method = lm, se = FALSE, color = "black",
-              linetype = "dashed") +
+  geom_text(
+    x = 14, y = 14, label = "r = 0.89, P < 0.001",
+    color = "black", size = 5
+  ) +
+  geom_smooth(
+    method = lm, se = FALSE, color = "black",
+    linetype = "dashed"
+  ) +
   theme(legend.position = "none")
 
 
@@ -130,8 +148,8 @@ ggplot(data = correlacao_arbustos, aes(x = Tamanho_raiz,
 dados_regressao <- ecodados::regressoes
 
 ## Verificar as premissas do teste
-lm(CRC ~ Temperatura, data = dados_regressao) |> 
-plot()
+lm(CRC ~ Temperatura, data = dados_regressao) |>
+  plot()
 
 ## regressão simples
 modelo_regressao <- lm(CRC ~ Temperatura, data = dados_regressao)
@@ -144,8 +162,10 @@ summary(modelo_regressao)
 
 ## Gráfico
 ggplot(data = dados_regressao, aes(x = Temperatura, y = CRC)) +
-  labs(x = "Temperatura média anual (°C)",
-       y = "Comprimento rostro-cloacal (mm)") +
+  labs(
+    x = "Temperatura média anual (°C)",
+    y = "Comprimento rostro-cloacal (mm)"
+  ) +
   geom_point(size = 4, shape = 21, fill = "darkorange", alpha = 0.7) +
   geom_smooth(method = lm, se = FALSE, color = "black") +
   theme(legend.position = "none")
@@ -178,8 +198,9 @@ predict(modelo_regressao, newdata = data.frame(Temperatura = 17)) - predict(mode
 # Multicolinearidade -  Multicolinearidade ocorre quando as variáveis preditoras são correlacionadas. A multicolinearidade aumentam o erro padrão associado aos coeficientes produzindo resultados menos confiáveis.
 
 lm(CRC ~ Temperatura + Precipitacao,
-   data = dados_regressao) |> 
-car::vif()
+  data = dados_regressao
+) |>
+  car::vif()
 
 # VIF (Fator de Inflação da Variância) - Alguns autores consideram valores de VIF acima de 10 como fortemente correlacionadas, outros mais conservadores consideram o valor de 5, 3 ou até mesmo 2.
 
@@ -190,14 +211,16 @@ cowplot::plot_grid(plotlist = sjPlot::plot_model(lm(CRC ~ Temperatura + Precipit
 
 ## regressão múltipla
 modelo_regressao_mult <- lm(CRC ~ Temperatura + Precipitacao,
-   data = dados_regressao)
+  data = dados_regressao
+)
 summary(modelo_regressao_mul)
 
 # Likelihood-ratio test (LRT) - compara dois modelos aninhados, testando se os parâmetros do modelo mais complexo diferem significativamente do modelo mais simples. Em outras palavras, ele testa se há necessidade de se incluir uma variável extra no modelo para explicar os dados.
 
 ## Criando os modelos aninhados
 modelo_regressao_mul <- lm(CRC ~ Temperatura + Precipitacao,
-                           data = dados_regressao)
+  data = dados_regressao
+)
 modelo_regressao <- lm(CRC ~ Temperatura, data = dados_regressao)
 
 ## Likelihood-ratio test (LRT)
@@ -234,7 +257,7 @@ lmtest::lrtest(modelo_regressao, modelo_intercepto)
 # Dados
 dados_anova_simples <- ecodados::anova_simples
 
-dados_anova_simples <- dados_anova_simples |> 
+dados_anova_simples <- dados_anova_simples |>
   mutate(Tratamento = stringr::str_replace(Tratamento, "Adubo_X-2020", "Adubo_X_2020"))
 
 
@@ -256,23 +279,32 @@ TukeyHSD(Modelo_anova)
 
 ## Reorganizando a ordem que os grupos irão aparecer no gráfico
 dados_anova_simples$Tratamento <- factor(dados_anova_simples$Tratamento,
-                                         levels = c("Controle","Adubo_Tradicional", "Adubo_X_2020"))
+  levels = c("Controle", "Adubo_Tradicional", "Adubo_X_2020")
+)
 
 ## Gráfico
-ggplot(data = dados_anova_simples,
-       aes(x = Tratamento, y = Crescimento, color = Tratamento)) +
-  geom_boxplot(fill = c("darkorange", "darkorchid", "cyan4"),
-               color = "black", show.legend = FALSE, alpha = 0.4) +
-  geom_jitter(shape = 16, position = position_jitter(0.1),
-              cex = 4, alpha = 0.7) +
+ggplot(
+  data = dados_anova_simples,
+  aes(x = Tratamento, y = Crescimento, color = Tratamento)
+) +
+  geom_boxplot(
+    fill = c("darkorange", "darkorchid", "cyan4"),
+    color = "black", show.legend = FALSE, alpha = 0.4
+  ) +
+  geom_jitter(
+    shape = 16, position = position_jitter(0.1),
+    cex = 4, alpha = 0.7
+  ) +
   scale_color_manual(values = c("darkorange", "darkorchid", "cyan4")) +
   scale_y_continuous(limits = c(0, 20), breaks = c(0, 5, 10, 15, 20)) +
   geom_text(x = 1, y = 12, label = "ab", color = "black", size = 5) +
   geom_text(x = 2, y = 17, label = "a", color = "black", size = 5) +
   geom_text(x = 3, y = 17, label = "b", color = "black", size = 5) +
   scale_x_discrete(labels = c("Sem adubo", "Tradicional", "X-2020")) +
-  labs(x = "Adubação", y = "Crescimento Coffea arabica (cm)",
-       size = 20) +
+  labs(
+    x = "Adubação", y = "Crescimento Coffea arabica (cm)",
+    size = 20
+  ) +
   theme(legend.position = "none")
 
 
@@ -308,24 +340,36 @@ anova(Modelo2)
 # não precisamos realizar testes de comparações múltiplas post-hoc porque os fatores apresentam apenas dois níveis.
 
 ## Gráfico
-ggplot(data = Modelo2,
-       aes(y = Tempo, x = Pessoas, color = Idade)) +
+ggplot(
+  data = Modelo2,
+  aes(y = Tempo, x = Pessoas, color = Idade)
+) +
   geom_boxplot() +
-  stat_summary(fun = mean, geom ="point",
-               aes(group = Idade, x = Pessoas),
-               color = "black",
-               position = position_dodge(0.7), size = 4) +
+  stat_summary(
+    fun = mean, geom = "point",
+    aes(group = Idade, x = Pessoas),
+    color = "black",
+    position = position_dodge(0.7), size = 4
+  ) +
   ggforce::geom_link(aes(x = 0.8, y = 31, xend = 1.8, yend = 40),
-            color = "darkorange",
-            lwd = 1.3, linetype = 2) +
+    color = "darkorange",
+    lwd = 1.3, linetype = 2
+  ) +
   ggforce::geom_link(aes(x = 1.2, y = 19, xend = 2.2, yend = 26.5),
-            color = "cyan4", lwd = 1.3, linetype = 2) +
-  labs(x = "Sistema XY de determinação do sexo",
-       y = "Tempo (horas) para eliminar a droga") +
-  scale_color_manual(values = c("darkorange", "cyan4",
-                                "darkorange", "cyan4")) +
-  scale_y_continuous(limits = c(10, 50),
-                     breaks = c(10, 20, 30, 40, 50))
+    color = "cyan4", lwd = 1.3, linetype = 2
+  ) +
+  labs(
+    x = "Sistema XY de determinação do sexo",
+    y = "Tempo (horas) para eliminar a droga"
+  ) +
+  scale_color_manual(values = c(
+    "darkorange", "cyan4",
+    "darkorange", "cyan4"
+  )) +
+  scale_y_continuous(
+    limits = c(10, 50),
+    breaks = c(10, 20, 30, 40, 50)
+  )
 
 # ANOVA de dois fatores com efeito da interação
 
@@ -334,37 +378,50 @@ dados_dois_fatores_interacao2 <- ecodados::anova_dois_fatores_interacao2
 
 ## Análise anova de dois fatores
 Modelo_interacao2 <- aov(Tempo ~ Pessoas * Idade,
-                         data = dados_dois_fatores_interacao2)
+  data = dados_dois_fatores_interacao2
+)
 
 ## Olhando os resultados
 anova(Modelo_interacao2)
 
 ## Gráfico
-ggplot(data = dados_dois_fatores_interacao2,
-       aes(y = Tempo, x = Pessoas, color = Idade)) +
+ggplot(
+  data = dados_dois_fatores_interacao2,
+  aes(y = Tempo, x = Pessoas, color = Idade)
+) +
   geom_boxplot() +
-  stat_summary(fun = mean, geom ="point",
-               aes(group = Idade, x = Pessoas),
-               color = "black", position = position_dodge(0.7),
-               size = 4) +
+  stat_summary(
+    fun = mean, geom = "point",
+    aes(group = Idade, x = Pessoas),
+    color = "black", position = position_dodge(0.7),
+    size = 4
+  ) +
   ggforce::geom_link(aes(x = 0.8, y = 31, xend = 1.8, yend = 27),
-            color = "darkorange",
-            lwd = 1.3, linetype = 2) +
+    color = "darkorange",
+    lwd = 1.3, linetype = 2
+  ) +
   ggforce::geom_link(aes(x = 1.2, y = 19, xend = 2.2, yend = 41),
-            color = "cyan4",
-            lwd = 1.3, linetype = 2) +
-  labs(x = "Sistema XY de determinação do sexo",
-       y = "Tempo (horas) para eliminar a droga") +
-  scale_color_manual(values = c("darkorange", "cyan4",
-                                "darkorange", "cyan4")) +
-  scale_y_continuous(limits = c(10, 50),
-                     breaks = c(10, 20, 30, 40, 50))
+    color = "cyan4",
+    lwd = 1.3, linetype = 2
+  ) +
+  labs(
+    x = "Sistema XY de determinação do sexo",
+    y = "Tempo (horas) para eliminar a droga"
+  ) +
+  scale_color_manual(values = c(
+    "darkorange", "cyan4",
+    "darkorange", "cyan4"
+  )) +
+  scale_y_continuous(
+    limits = c(10, 50),
+    breaks = c(10, 20, 30, 40, 50)
+  )
 
 # Quando as linhas se cruzam é um exemplo clássico de interação! Jovens são mais rápidos para eliminarem a droga em pessoas XX, enquanto os idosos são mais rápidos para eliminarem a droga nas pessoas XY.
 
 
 # ANOVA em blocos aleatorizados ----
-# No delineamento experimental com blocos aleatorizados, cada fator é agrupado em blocos, com réplicas de cada nível do fator representado em cada bloco. 
+# No delineamento experimental com blocos aleatorizados, cada fator é agrupado em blocos, com réplicas de cada nível do fator representado em cada bloco.
 
 # O bloco é uma área ou período de tempo dentro do qual as condições ambientais são relativamente homogêneas. O objetivo do uso dos blocos é controlar fontes de variações indesejadas na variável dependente que não são de interesse do pesquisador. Desta maneira, podemos retirar dos resíduos os efeitos das variações indesejadas que não são do nosso interesse, e testar com maior poder estatístico os efeitos dos tratamentos de interesse.
 
@@ -386,22 +443,27 @@ pairs(lsmeans::lsmeans(model_bloco, "Pocas"), adjust = "tukey")
 
 # Reordenando a ordem que os grupos irão aparecer no gráfico.
 dados_bloco$Pocas <- factor(dados_bloco$Pocas,
-                            levels = c("Int-100m", "Int-50m", "Borda",
-                                       "Mat-50m", "Mat-100m"))
+  levels = c(
+    "Int-100m", "Int-50m", "Borda",
+    "Mat-50m", "Mat-100m"
+  )
+)
 
 ## Gráfico
 ggplot(data = dados_bloco, aes(x = Pocas, y = Riqueza)) +
   labs(x = "Poças artificiais", y = "Riqueza de espécies de anuros") +
   geom_boxplot(color = "black", show.legend = FALSE, alpha = 0.4) +
-  geom_jitter(shape = 16, position = position_jitter(0.1), cex = 4,
-              alpha = 0.7) +
-  scale_x_discrete(labels = c("-100m","-50m","Borda", "50m", "100m")) +
+  geom_jitter(
+    shape = 16, position = position_jitter(0.1), cex = 4,
+    alpha = 0.7
+  ) +
+  scale_x_discrete(labels = c("-100m", "-50m", "Borda", "50m", "100m")) +
   theme(legend.position = "none")
 
 # Neste exemplo, rejeitamos a hipótese nula de que a distância das poças artificiais até as bordas dos fragmentos florestais não influência a riqueza de espécies de anuros. As poças artificiais instaladas nas bordas dos fragmentos florestais apresentaram maior riqueza de espécies do que as poças distantes.
 
 # Análise de Covariância (ANCOVA) ----
-# A ANCOVA pode ser compreendida como uma extensão da ANOVA com a adição de uma variável contínua (covariável) medida em todas as unidades amostrais. 
+# A ANCOVA pode ser compreendida como uma extensão da ANOVA com a adição de uma variável contínua (covariável) medida em todas as unidades amostrais.
 
 # A ideia é que a covariável também afete os valores da variável resposta. Não incluir a covariável irá fazer com que a variação não explicada pelo modelo se concentre nos resíduos. Incluindo a covariável, o tamanho do resíduo é menor e o teste para avaliar as diferenças nos tratamentos, que é o interesse do pesquisador, terá mais poder estatístico.
 
@@ -426,15 +488,21 @@ modelo_ancova2 <- lm(Biomassa ~ Herbivoria + Raiz, data = dados_ancova)
 lmtest::lrtest(modelo_ancova, modelo_ancova2)
 
 ## Gráfico
-ggplot(data = dados_ancova, aes(x = Raiz, y = Biomassa,
-                                fill = Herbivoria)) +
+ggplot(data = dados_ancova, aes(
+  x = Raiz, y = Biomassa,
+  fill = Herbivoria
+)) +
   labs(x = "Tamanho da raiz (cm)", y = "Biomassa dos frutos (g)") +
   geom_point(size = 4, shape = 21, alpha = 0.7) +
   scale_colour_manual(values = c("darkorange", "cyan4")) +
-  scale_fill_manual(values = c("darkorange", "cyan4"),
-                    labels = c("Com herbivoria", "Sem herbivoria")) +
-  geom_smooth(aes(color = Herbivoria), method = "lm",
-              show.legend = FALSE)
+  scale_fill_manual(
+    values = c("darkorange", "cyan4"),
+    labels = c("Com herbivoria", "Sem herbivoria")
+  ) +
+  geom_smooth(aes(color = Herbivoria),
+    method = "lm",
+    show.legend = FALSE
+  )
 
 
 # GLS - Mínimos Quadrados Generalizados (Generalized Least Squares)  ----
@@ -451,7 +519,7 @@ riqueza <- vegan::specnumber(mite)
 
 ## Selecionar a variável ambiental - quantidade de água no substrato
 data("mite.env")
-agua <- mite.env[,2]
+agua <- mite.env[, 2]
 
 ## Criar um data.frame com riqueza, quantidade de água no substrato e coordenadas geográficas
 data("mite.xy")
@@ -483,21 +551,23 @@ no_spat_gls <- nlme::gls(riqueza ~ agua, mite_dat, method = "REML")
 
 # O variograma é uma ferramenta da geoestatística que mede a semelhança entre valores (neste caso, os resíduos) em função da distância entre os pontos.
 
-#Se os resíduos não têm estrutura espacial, o variograma será aproximadamente plano (sem aumento da semivariância com a distância).
+# Se os resíduos não têm estrutura espacial, o variograma será aproximadamente plano (sem aumento da semivariância com a distância).
 
 # Se os resíduos têm estrutura espacial, a semivariância aumenta com a distância, indicando que resíduos próximos são mais parecidos entre si do que os distantes.
 
 # O variograma possui três parâmetros: i) nugget, ii) range e iii) sill
 
-# O nugget é utilizado para quantificar a variabilidade observada nos valores menores (ou seja, em pequenas distâncias). 
+# O nugget é utilizado para quantificar a variabilidade observada nos valores menores (ou seja, em pequenas distâncias).
 
 # O range, por sua vez, é usado para identificar a distância máxima em que a autocorrelação espacial está presente
 
 # A posição limiar que representa claramente a “pausa” no crescimento da curva (range) indica os pontos não correlacionados e representa o sill.
 
 ## Variograma
-variog_mod1 <- nlme::Variogram(no_spat_gls, form = ~lat+long,
-                               resType = "normalized")
+variog_mod1 <- nlme::Variogram(no_spat_gls,
+  form = ~ lat + long,
+  resType = "normalized"
+)
 
 ## Gráfico
 plot(variog_mod1)
@@ -518,38 +588,52 @@ ape::Moran.I(x = mite_dat$riqueza, w = dat_dist)
 
 # Ajuste do modelo para o melhor variograma
 ## Covariância esférica
-espher_model <- nlme::gls(riqueza ~ agua, mite_dat,
-                          nlme::corSpher(form = ~lat+long, nugget = TRUE))
+espher_model <- nlme::gls(
+  riqueza ~ agua, mite_dat,
+  nlme::corSpher(form = ~ lat + long, nugget = TRUE)
+)
 ## Covariância exponencial
-expon_model <- nlme::gls(riqueza ~ agua, mite_dat,
-                         nlme::corExp(form = ~lat+long, nugget = TRUE))
+expon_model <- nlme::gls(
+  riqueza ~ agua, mite_dat,
+  nlme::corExp(form = ~ lat + long, nugget = TRUE)
+)
 ## Covariância Gaussiana
-gauss_model <- nlme::gls(riqueza ~ agua, mite_dat,
-                         nlme::corGaus(form = ~lat+long, nugget = TRUE))
+gauss_model <- nlme::gls(
+  riqueza ~ agua, mite_dat,
+  nlme::corGaus(form = ~ lat + long, nugget = TRUE)
+)
 ## Covariância linear
-cor_linear_model <- nlme::gls(riqueza ~ agua, mite_dat,
-                              nlme::corLin(form = ~lat+long, nugget = TRUE))
+cor_linear_model <- nlme::gls(
+  riqueza ~ agua, mite_dat,
+  nlme::corLin(form = ~ lat + long, nugget = TRUE)
+)
 ## Covariância razão quadrática
-ratio_model <- nlme::gls(riqueza ~ agua, mite_dat,
-                         nlme::corRatio(form = ~lat+long, nugget = TRUE))
+ratio_model <- nlme::gls(
+  riqueza ~ agua, mite_dat,
+  nlme::corRatio(form = ~ lat + long, nugget = TRUE)
+)
 
 
 # AIC - AIC é um método estatístico que compara os modelos criados na sua pesquisa e seleciona o melhor entre eles.
 
 # Um modelo só será considerado superior a outro quando a diferença entre os seus valores de AIC (i.e, delta) forem maiores do que 2.
 
-aic_fit <- AIC(no_spat_gls, espher_model, expon_model, gauss_model,
-               cor_linear_model, ratio_model)
+aic_fit <- AIC(
+  no_spat_gls, espher_model, expon_model, gauss_model,
+  cor_linear_model, ratio_model
+)
 
-aic_fit |> 
+aic_fit |>
   dplyr::arrange(AIC)
 
 ## Gráfico
 plot(residuals(ratio_model, type = "normalized") ~ fitted(ratio_model))
 
 ## Varigrama
-ratio_variog <- nlme::Variogram(ratio_model, form = ~lat+long,
-                          resType = "normalized")
+ratio_variog <- nlme::Variogram(ratio_model,
+  form = ~ lat + long,
+  resType = "normalized"
+)
 
 ## Resumo dos modelos
 summary(ratio_model)$tTable
@@ -602,17 +686,23 @@ dplyr::glimpse(fragmentos)
 ggplot(fragmentos, aes(dfrag, Riqueza_obs)) +
   geom_point(size = 4, alpha = 0.7) +
   geom_smooth(method = "lm") +
-  labs(x = "Distância para o fragmento mais próximo",
-       y = "Riqueza observada")
+  labs(
+    x = "Distância para o fragmento mais próximo",
+    y = "Riqueza observada"
+  )
 
 
 ## Modelo
-mod_pois <- glm(Riqueza_obs ~ dfrag, family = poisson(link = "log"),
-                data = fragmentos)
+mod_pois <- glm(Riqueza_obs ~ dfrag,
+  family = poisson(link = "log"),
+  data = fragmentos
+)
 
 ## Diagnose avançada # Testando Superdispersão - Superdispersão ocorre quando a variância observada é muito maior do que aquela predita pelo modelo.
-simulationOutput <- DHARMa::simulateResiduals(fittedModel = mod_pois,
-                                              plot = TRUE)
+simulationOutput <- DHARMa::simulateResiduals(
+  fittedModel = mod_pois,
+  plot = TRUE
+)
 
 # KS test: p = 0.52 - O Teste de Kolmogorov-Smirnov (KS) verifica se a distribuição geral dos resíduos simulados se desvia significativamente de uma distribuição uniforme (o que é esperado para um modelo bem ajustado).
 
@@ -631,11 +721,11 @@ par(mfrow = c(1, 1))
 DHARMa::testDispersion(mod_pois)
 
 # usa a estatística qui-quadrado de Pearson para calcular a dispersão. - Melhor visualização.
-performance::check_overdispersion(mod_pois) 
+performance::check_overdispersion(mod_pois)
 
 # Outra maneira de calcular com base na deviance -  Esta é a forma "clássica" e mais direta de estimar o parâmetro de dispersão a partir da saída padrão de um GLM no R (summary(mod_pois)). A "deviance" é uma medida de quão bem o seu modelo ajustado se compara a um "modelo saturado" (um modelo que se ajusta perfeitamente aos dados).
 
-mod_pois$deviance/mod_pois$df.residual
+mod_pois$deviance / mod_pois$df.residual
 # Quando esse valor é próximo de 1, isso sugere que não há overdispersion. No entanto, se ele for maior que 1.5, isso sugere que o modelo sofre de overdispersion
 
 ## Resumo do modelo
@@ -662,11 +752,15 @@ performance::r2(mod_pois)
 
 library(MASS)
 a1 <- ggplot(fragmentos, aes(dfrag, Riqueza_obs)) +
-  geom_point(cex = 4,alpha = 0.7) +
-  geom_smooth(method = "glm", formula = y~x,
-              method.args = list(family = "poisson"), se = TRUE) +
-  labs(x = "Distância para o fragmento mais próximo",
-       y = "Riqueza observada") 
+  geom_point(cex = 4, alpha = 0.7) +
+  geom_smooth(
+    method = "glm", formula = y ~ x,
+    method.args = list(family = "poisson"), se = TRUE
+  ) +
+  labs(
+    x = "Distância para o fragmento mais próximo",
+    y = "Riqueza observada"
+  )
 
 ggExtra::ggMarginal(a1, fill = "red")
 
@@ -692,9 +786,9 @@ simulationOutput <- DHARMa::simulateResiduals(fittedModel = mod_nb, plot = TRUE)
 par(mfrow = c(1, 1))
 DHARMa::testDispersion(mod_nb)
 
-performance::check_overdispersion(mod_nb) 
+performance::check_overdispersion(mod_nb)
 
-mod_nb$deviance/mod_nb$df.residual
+mod_nb$deviance / mod_nb$df.residual
 
 ## Coeficiente de determinação
 piecewiseSEM::rsquared(mod_nb)
@@ -704,9 +798,11 @@ summary(mod_nb)
 ## Gráfico
 ggplot(fragmentos, aes(dfrag, Riqueza_obs)) +
   geom_point(size = 4, alpha = 0.7) +
-  geom_smooth(method = "glm.nb", formula = y~x, se = TRUE) +
-  labs(x = "Distância para o fragmento mais próximo",
-       y = "Riqueza observada")
+  geom_smooth(method = "glm.nb", formula = y ~ x, se = TRUE) +
+  labs(
+    x = "Distância para o fragmento mais próximo",
+    y = "Riqueza observada"
+  )
 
 
 # Quasi-Poisson ----
@@ -714,8 +810,9 @@ ggplot(fragmentos, aes(dfrag, Riqueza_obs)) +
 
 ## Modelo
 mod_quasipois <- glm(Riqueza_obs ~ dfrag,
-                     family = quasipoisson(link = "log"),
-                     data = fragmentos)
+  family = quasipoisson(link = "log"),
+  data = fragmentos
+)
 
 
 # Distribuição Binomial ----
@@ -727,38 +824,49 @@ mod_quasipois <- glm(Riqueza_obs ~ dfrag,
 uv_cells <- ecodados::uv_cells
 
 ## Traduzir nomes das colunas e níveis de pigmentação
-colnames(uv_cells) <- c("UV", "Pigmentacao", "n_celulas", "linfocito",
-                        "neutrofilo", "basofilo", "monocito",
-                        "eosinofilo")
+colnames(uv_cells) <- c(
+  "UV", "Pigmentacao", "n_celulas", "linfocito",
+  "neutrofilo", "basofilo", "monocito",
+  "eosinofilo"
+)
 
 uv_cells <- uv_cells |>
-  dplyr::mutate(Pigmentacao = stringr::str_replace_all(Pigmentacao,
-                                                       c("Yes" = "Sim", "No" = "Não")))
+  dplyr::mutate(Pigmentacao = stringr::str_replace_all(
+    Pigmentacao,
+    c("Yes" = "Sim", "No" = "Não")
+  ))
 
 ## Gráfico
 # Calcular média e intervalo de confiança
 eosinofilo <- Rmisc::summarySE(uv_cells,
-                        measurevar = "eosinofilo",
-                        groupvars = c("UV", "Pigmentacao"))
+  measurevar = "eosinofilo",
+  groupvars = c("UV", "Pigmentacao")
+)
 
 # Definir posição de linhas e pontos no gráfico
 pd <- position_dodge(0.1)
 
-eosinofilo |> 
-  ggplot(aes(x = UV, y = eosinofilo, colour = Pigmentacao,
-             group = Pigmentacao, fill = Pigmentacao)) +
+eosinofilo |>
+  ggplot(aes(
+    x = UV, y = eosinofilo, colour = Pigmentacao,
+    group = Pigmentacao, fill = Pigmentacao
+  )) +
   geom_errorbar(aes(ymin = eosinofilo - se, ymax = eosinofilo + se),
-                width = .1, size = 1.1, position = pd) +
+    width = .1, size = 1.1, position = pd
+  ) +
   geom_line(position = pd, size = 1.1) +
   geom_point(pch = 21, colour = "black", position = pd, size = 3.5) +
   scale_colour_manual(values = c("darkorange", "cyan4")) +
   scale_fill_manual(values = c("darkorange", "cyan4")) +
-  labs(x = "UV", y = "Eosinófilo", fill = "Pigmentação",
-       colour = "Pigmentação")
+  labs(
+    x = "UV", y = "Eosinófilo", fill = "Pigmentação",
+    colour = "Pigmentação"
+  )
 
 ## Modelo
 mod1 <- glm(cbind(eosinofilo, n_celulas) ~ UV * Pigmentacao,
-            family = binomial, data = uv_cells)
+  family = binomial, data = uv_cells
+)
 
 ## Diagnose avançada
 simulationBion <- DHARMa::simulateResiduals(fittedModel = mod1, plot = TRUE)
@@ -771,12 +879,14 @@ summary(mod1)
 anova(mod1)
 
 ## Parâmetros
-pairs(emmeans::emmeans(mod1, ~ UV|Pigmentacao))
+pairs(emmeans::emmeans(mod1, ~ UV | Pigmentacao))
 
 ggplot(uv_cells, aes(UV, eosinofilo)) +
   geom_violin(aes(color = Pigmentacao)) +
-  geom_jitter(shape = 16, position = position_jitter(0.1),
-              cex = 4, alpha = 0.7) +
+  geom_jitter(
+    shape = 16, position = position_jitter(0.1),
+    cex = 4, alpha = 0.7
+  ) +
   scale_colour_manual(values = c("darkorange", "cyan4"))
 
 
@@ -787,8 +897,10 @@ ggplot(uv_cells, aes(UV, eosinofilo)) +
 # Dados
 lagartos <- ecodados::lagartos
 
-colnames(lagartos) <- c("numero", "sexo", "SVL", "comprimento_cauda",
-                        "cauda_autotomizada", "estado_cauda")
+colnames(lagartos) <- c(
+  "numero", "sexo", "SVL", "comprimento_cauda",
+  "cauda_autotomizada", "estado_cauda"
+)
 
 ## Dados faltantes
 visdat::vis_miss(lagartos, cluster = TRUE)
@@ -802,34 +914,42 @@ visdat::vis_miss(dados_semNA)
 ## Gráfico
 ggplot(dados_semNA, aes(SVL, estado_cauda)) +
   geom_point(aes(shape = sexo, colour = sexo), size = 4, alpha = 0.4) +
-  geom_smooth(method = "glm",
-              method.args = list(family = "binomial")) +
-  labs(y = "Estado da Cauda", x = "Comprimento Rostro-Cloacal (mm)",
-       shape = "Sexo", colour = "Sexo")
+  geom_smooth(
+    method = "glm",
+    method.args = list(family = "binomial")
+  ) +
+  labs(
+    y = "Estado da Cauda", x = "Comprimento Rostro-Cloacal (mm)",
+    shape = "Sexo", colour = "Sexo"
+  )
 
 # Logit ----
 ## Modelos
-mod_log <- glm(estado_cauda ~ SVL * sexo, data = dados_semNA,
-               family = binomial(link = "logit"))
+mod_log <- glm(estado_cauda ~ SVL * sexo,
+  data = dados_semNA,
+  family = binomial(link = "logit")
+)
 
 # Probit ----
-mod_pro <- glm(estado_cauda ~ SVL * sexo, data = dados_semNA,
-               family = binomial(link = "probit"))
+mod_pro <- glm(estado_cauda ~ SVL * sexo,
+  data = dados_semNA,
+  family = binomial(link = "probit")
+)
 
 # Seleção de modelos
 bbmle::AICctab(mod_log, mod_pro, nobs = 139)
-#Existe pouca diferença entre o modelo probit e logit. Como o modelo logit é mais simples vamos interpretá-lo apenas.
+# Existe pouca diferença entre o modelo probit e logit. Como o modelo logit é mais simples vamos interpretá-lo apenas.
 
 ## Diagnóse avançada
 simulationBion <- DHARMa::simulateResiduals(fittedModel = mod_log, plot = T)
 
-performance::binned_residuals(mod_log,  show_dots = TRUE)
+performance::binned_residuals(mod_log, show_dots = TRUE)
 
 # Para modelos com parâmetro de dispersão conhecida (e.g., binomial e Poisson), o chi-quadrado é a estatística mais apropriada.
 ## Coeficientes estimados pelo modelo
 summary(mod_log)
 
-anova(mod_log, test = "Chisq" )
+anova(mod_log, test = "Chisq")
 
 # A interpretação dos resultados é que o tamanho de corpo (SVL) afeta negativamente a probabilidade da cauda estar intacta, i.e., com o aumento do tamanho, a probabilidade da cauda permanecer intacta diminui. A interação não foi significativa, então o efeito é independente do sexo dos lagartos.
 
@@ -853,7 +973,7 @@ parasitas <- ecodados::parasitas
 ggplot(parasitas, aes(Raillietiella_mottae, fill = Especie)) +
   geom_density(alpha = 0.4) +
   facet_grid(Especie ~ Sexo) +
-  scale_fill_manual(values = c("darkorange", "cyan4"))  +
+  scale_fill_manual(values = c("darkorange", "cyan4")) +
   theme(legend.position = "none")
 
 ggplot(parasitas, aes(CRC, Raillietiella_mottae, fill = Especie)) +
@@ -861,14 +981,17 @@ ggplot(parasitas, aes(CRC, Raillietiella_mottae, fill = Especie)) +
   facet_grid(Sexo ~ Especie) +
   scale_fill_manual(values = c("darkorange", "cyan4")) +
   theme(legend.position = "none") +
-  labs(x = "Comprimento Rostro-Cloacal",
-       y = expression(italic("Raillietiella mottae")))
+  labs(
+    x = "Comprimento Rostro-Cloacal",
+    y = expression(italic("Raillietiella mottae"))
+  )
 
 # Quando nos deparamos com dados complexos assim, a estratégia é sempre começar com um modelo simples e depois adicionar mais parâmetros. Portanto, vamos iniciar com um modelo Poisson, mesmo sabendo que ele muito provavelmente não será adequado para modelar estes dados.
 
 # ## Modelo
 pois_plain <- glm(Raillietiella_mottae ~ CRC + Sexo * Especie,
-                  data = parasitas, family = "poisson")
+  data = parasitas, family = "poisson"
+)
 
 ## Diagnose avançada
 # Verificar zero inflation
@@ -881,15 +1004,18 @@ performance::check_overdispersion(pois_plain)
 library(glmmTMB)
 # Hurdle model
 hur_NB <- glmmTMB(Raillietiella_mottae ~ CRC + Sexo * Especie,
-                  zi = ~., data = parasitas, family = truncated_nbinom2)
+  zi = ~., data = parasitas, family = truncated_nbinom2
+)
 
 # zero-inflated Poisson
 ziNB_mod2 <- glmmTMB(Raillietiella_mottae ~ CRC + Sexo * Especie,
-                     zi = ~., data = parasitas, family = nbinom2)
+  zi = ~., data = parasitas, family = nbinom2
+)
 
 # zero-inflated Negative binomial
 ziP_mod2 <- glmmTMB(Raillietiella_mottae ~ CRC + Sexo * Especie,
-                    zi = ~., data = parasitas, family = poisson)
+  zi = ~., data = parasitas, family = poisson
+)
 
 ## Diagnose de inflação de zeros
 performance::check_zeroinflation(hur_NB) # Aqui vemos que o modelo zero-altered (Hurdle Model) conseguiu predizer exatamente a quantidade de zeros observada, fazendo com que o modelo seja suficiente para usarmos com esses dados.
@@ -899,8 +1025,10 @@ performance::check_zeroinflation(ziP_mod2)
 performance::check_zeroinflation(ziNB_mod2)
 
 ## Seleção de modelos
-bbmle::ICtab(pois_plain, hur_NB, ziP_mod2, ziNB_mod2, type = c("AICc"),
-      weights = TRUE)
+bbmle::ICtab(pois_plain, hur_NB, ziP_mod2, ziNB_mod2,
+  type = c("AICc"),
+  weights = TRUE
+)
 # Não podemos distinguir entre os dois modelos com zeroinflated porque o dAICc < 2, ou seja, o ajuste deles aos dados são praticamente iguais.
 
 ## Diagnoses
@@ -916,16 +1044,24 @@ summary(hur_NB)
 ## Gráfico
 parasitas$phat <- predict(hur_NB, type = "response")
 parasitas <- parasitas[with(parasitas, order(Sexo, Especie)), ]
-ggplot(parasitas, aes(x = CRC, y = phat, colour = Especie,
-                      shape = Sexo, linetype = Sexo)) +
-  geom_point(aes(y = Raillietiella_mottae), size = 4,
-             alpha = .7, position = position_jitter(h = .2)) +
+ggplot(parasitas, aes(
+  x = CRC, y = phat, colour = Especie,
+  shape = Sexo, linetype = Sexo
+)) +
+  geom_point(aes(y = Raillietiella_mottae),
+    size = 4,
+    alpha = .7, position = position_jitter(h = .2)
+  ) +
   geom_line(size = 1) +
   scale_fill_manual(values = c("darkorange", "cyan4")) +
   scale_colour_manual(values = c("darkorange", "cyan4")) +
-  labs(x = "Comprimento Rostro-Cloacal",
-       y = expression(paste("Abundância de ",
-                            italic("Raillietiella mottae"))))
+  labs(
+    x = "Comprimento Rostro-Cloacal",
+    y = expression(paste(
+      "Abundância de ",
+      italic("Raillietiella mottae")
+    ))
+  )
 
 
 # Dados Contínuos - Distribuição Beta ----
@@ -935,8 +1071,10 @@ ggplot(parasitas, aes(x = CRC, y = phat, colour = Especie,
 fish <- ecodados::fish
 
 ## Tradução dos nomes das colunas
-colnames(fish) <- c("animal", "tratamento", "tempo", "sexo",
-                    "preto", "vermelho")
+colnames(fish) <- c(
+  "animal", "tratamento", "tempo", "sexo",
+  "preto", "vermelho"
+)
 
 # Pergunta - A YOH aumenta a coloração escura no olho e mandíbula dos peixes via dispersão dos pigmentos?
 
@@ -947,7 +1085,7 @@ fish$sexo <- factor(fish$sexo)
 macho_preto <- dplyr::filter(fish, sexo == "M")
 
 ## Gráfico
-ggplot(macho_preto, aes(preto/100)) +
+ggplot(macho_preto, aes(preto / 100)) +
   geom_density(colour = "cyan4", fill = "cyan4", alpha = 0.4) +
   theme(legend.position = "none") +
   labs(x = "Índice de escuridão do corpo")
@@ -955,8 +1093,9 @@ ggplot(macho_preto, aes(preto/100)) +
 # No histograma podemos ver que os dados de fato variam continuamente no intervalo entre 0 e 1, tendo uma distribuição notadamente bimodal.
 
 ## Modelo
-mod2 <- glmmTMB::glmmTMB(preto/100 ~ tratamento * tempo + (1|animal),
-                family = glmmTMB::beta_family, data = macho_preto)
+mod2 <- glmmTMB::glmmTMB(preto / 100 ~ tratamento * tempo + (1 | animal),
+  family = glmmTMB::beta_family, data = macho_preto
+)
 
 ## Diagnose
 simulationOutput <- DHARMa::simulateResiduals(fittedModel = mod2, plot = TRUE)
@@ -967,23 +1106,30 @@ car::Anova(mod2)
 # Aqui vemos que a interação é significativa. Portanto, temos de interpretar os níveis do fator da combinação, fazemos isso no pacote emmeans colocando a barra |.
 
 # níveis do fator da combinação
-pairs(emmeans::emmeans(mod2, ~ tratamento|tempo))
+pairs(emmeans::emmeans(mod2, ~ tratamento | tempo))
 
 ## Gráfico
 escuridao <- Rmisc::summarySE(macho_preto,
-                       measurevar = "preto",
-                       groupvars = c("tempo", "tratamento"))
+  measurevar = "preto",
+  groupvars = c("tempo", "tratamento")
+)
 
 # Definir posição de linhas e pontos no gráfico
 pd <- position_dodge(0.1)
-escuridao |> 
-  ggplot(aes(x = tempo, y = preto, colour = tratamento,
-             group = tratamento, fill = tratamento)) +
-  geom_errorbar(aes(ymin=preto-se, ymax=preto +se),
-                width=.1, size = 1.1, position=pd) +
-  geom_line(position=pd, size = 1.1) +
-  geom_point(pch = 21, colour = "black", position=pd, size=3.5) +
+escuridao |>
+  ggplot(aes(
+    x = tempo, y = preto, colour = tratamento,
+    group = tratamento, fill = tratamento
+  )) +
+  geom_errorbar(aes(ymin = preto - se, ymax = preto + se),
+    width = .1, size = 1.1, position = pd
+  ) +
+  geom_line(position = pd, size = 1.1) +
+  geom_point(pch = 21, colour = "black", position = pd, size = 3.5) +
   scale_colour_manual(values = c("darkorange", "cyan4")) +
   scale_fill_manual(values = c("darkorange", "cyan4")) +
   xlab("Tempo de experimento (horas)") +
-  ylab("Índice de escuridão do corpo")  
+  ylab("Índice de escuridão do corpo")
+
+
+
