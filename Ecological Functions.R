@@ -1065,7 +1065,8 @@ ggplot(parasitas, aes(
 
 
 # Dados Contínuos - Distribuição Beta ----
-# O mais IMPORTANTE É o resumo (2000 caracteres), o projeto (resumo expandido – igual ao que foi submetido no processo de seleção) e se o projeto se enquadra em alguma ODS com a respectiva justificativa.
+# a família Beta é utilizada para modelar variáveis de resposta contínuas restritas ao intervalo (0, 1), como proporções ou taxas. Diferente da binomial, que lida com contagens de sucessos, o modelo Beta é adequado quando a variável é realmente contínua entre 0 e 1, como proporção de cobertura de coral, taxa de germinação, ou eficiência de um processo.
+
 
 # Dados
 fish <- ecodados::fish
@@ -1116,20 +1117,134 @@ escuridao <- Rmisc::summarySE(macho_preto,
 
 # Definir posição de linhas e pontos no gráfico
 pd <- position_dodge(0.1)
+
 escuridao |>
-  ggplot(aes(
-    x = tempo, y = preto, colour = tratamento,
-    group = tratamento, fill = tratamento
-  )) +
+  ggplot(aes(x = tempo, y = preto, colour = tratamento,
+    group = tratamento, fill = tratamento)) +
   geom_errorbar(aes(ymin = preto - se, ymax = preto + se),
-    width = .1, size = 1.1, position = pd
-  ) +
+    width = .1, size = 1.1, position = pd) +
   geom_line(position = pd, size = 1.1) +
-  geom_point(pch = 21, colour = "black", position = pd, size = 3.5) +
+  geom_point(pch = 21, colour = "black", position = pd, 
+             size = 3.5) +
   scale_colour_manual(values = c("darkorange", "cyan4")) +
   scale_fill_manual(values = c("darkorange", "cyan4")) +
   xlab("Tempo de experimento (horas)") +
   ylab("Índice de escuridão do corpo")
 
 
+# Análise Multidimensional ----
 
+# Análises multivariadas podem ser divididas, grosseiramente, em dois tipos: agrupamento e ordenação.
+
+# Análises de agrupamento, em geral, tentam agrupar objetos (observações) ou descritores em grupos de maneira que objetos do mesmo grupo sejam mais semelhantes entre si do que objetos de outros grupos (Legendre & Legendre 2012). 
+
+# Análise de ordenação, é uma operação pela qual os objetos (ou descritores) são posicionados num espaço que contém menos dimensões que o conjunto de dados original.
+
+# Modo Q e Modo R ----
+
+# A análise no Modo Q serve para verificar a relação entre objetos. Coeficientes de associação do modo Q são medidas de (dis)similaridade ou distância
+
+# Análise no Modo R serve para verificar a relação entre descritores. Os coeficientes de associação para o modo R são covariância ou correlação.
+
+# Índices de Similaridade (S) e Distância (1 - S) ----
+
+# A Similaridade é máxima (S=1) quando dois objetos são idênticos - Existem ao menos 26 índices de similaridade que podem ser agrupados de acordo com o tipo de dado (qualitativos ou quantitativos) ou a maneira com que lidam com duplos zeros (simétricos ou assimétricos).
+
+# Distância é o contrário da similaridade (D=1-S) e não têm limites superiores (dependem da unidade de medida). as distâncias só se aplicam a dados quantitativos e têm como características serem métricas, semi-métricas ou não-métricas.
+
+# Coeficientes Simétricos para Variáveis Contínuas ----
+# Euclidiana, Canberra (variação da Distância Euclidiana), Mahalanobis (calcula a distância entre dois pontos num espaço não ortogonal, levando em consideração a covariância entre descritores), Manhattan (variação da Distância Euclidiana), Chord (elimina diferenças entre abundância total de espécies), 𝜒2 (dá peso maior para espécies raras) e Hellinger (não dá peso para espécies raras).
+
+# Como essas medidas de distância apresentadas acima assumem que os dados são quantitativos e não de contagem, elas não são adequadas para lidar com dados de bundância ou incidência de espécies, porque atribuem um grau de parecença a pares de locais que compartilham zeros (Legendre & Legendre 2012). Por esse motivo, precisamos de coeficientes que desconsiderem os duplos zeros. Eles são chamados de assimétricos.
+
+# Coeficientes Assimétricos Binários para objetos ----
+#  Esses coeficientes são apropriados para dados de incidência de espécies (presença ausência) e desconsideram as duplas ausências. Os índices deste tipo mais comuns utilizados em ecologia são Jaccard, Sørensen e Ochiai.
+
+# A diferença entre os índices de Jaccard e Sørensen é que o índice de Sørensen dá peso dobrado para duplas presenças. Por conta dessas características, estes índices são adequados para quantificar diversidade beta (Anderson et al. 2011, Legendre & De Cáceres 2013). Esses índices variam entre 0 (nenhuma espécie é compartilhada entre o par de locais) a 1 (todas as espécies são compartilhadas entre o par de locais).
+
+# Coeficientes Binários para descritores (R mode) ----
+# Se o objetivo for calcular a similaridade entre descritores binários (e.g., presença ou ausência de características ambientais) de pares de locais, geralmente o coeficiente recomendado é o de Sokal & Michener. Este índice está implementado na função dist.binary() do pacote ade4.
+
+# Coeficientes Assimétricos Quantitativos para objetos ----
+# Estes são os coeficientes utilizados para dados de contagem (e.g., abundância) e quantitativos (e.g., frequência, biomassa, porcentagem de cobertura). Diferentemente das distâncias, estes coeficientes são assimétricos, ou seja, não consideram duplas ausências e, portanto, são adequados para analisar dados de composição de espécies. Além disso, uma outra característica deles é serem semi-métricos. Os índices mais comuns deste tipo são Bray-Curtis (conhecido como percentage difference, em inglês), Chord, log-Chord, Hellinger, chi-quadrado e Morisita-Horn. - Todos os índices discutidos até aqui estão implementados nas funções ade4::dist.ktab(), adespatial::dist.ldc() e vegan::vegdist().
+
+# Coeficientes para descritores (R mode) que incluem mistura de tipos de dados ----
+# Gower ade4::dist.ktab()
+
+# Dica ----
+# Padronize as variáveis (normalmente elas possuem unidades diferentes), para diminuir o erro do tipo 1, padronize-as utilizando a distribuição Z
+# Transforme os dados com muitos zeros e alta abundância - hellinger ou chord.
+
+
+# Análise de Agrupamento ----
+# O objetivo da análise de agrupamento é agrupar objetos admitindo que haja um grau de similaridade entre eles. - existem cinco tipos de métodos: i) sequenciais ou simultâneos, ii) aglomerativo ou divisivo, iii) monotéticos ou politéticos, iv) hierárquico ou não hierárquicos e v) probabilístico.
+
+#### Para avaliar o quão bem uma análise de agrupamento representa os dados originais existe uma métrica — o Coeficiente de Correlação Cofenético.
+
+# Agrupamento Hierárquico ----
+# Métodos hierárquicos podem ser divididos naqueles que consideram o centroide ou a média aritmética entre os grupos.
+
+# UPGMA (Agrupamento pelas médias aritméticas não ponderadas)----
+# É o principal método hierárquico que utiliza a média aritmética. - Ele funciona da seguinte forma: a maior similaridade (ou menor distância) identifica os próximos agrupamentos a serem formados. Após esse evento, o método calcula a média aritmética das similaridades ou distâncias entre um objeto e cada um dos membros do grupo ou, no caso de um grupo previamente formado, entre todos os membros dos dois grupos. Todos os objetos recebem pesos iguais no cálculo.
+
+# WARD ----
+# É o principal método que utiliza centroides. Ele é baseado no critério de quadrados mínimos (OLS), o mesmo utilizado para ajustar um modelo linear, o objetivo é definir os grupos de maneira que a soma de quadrado dentro dos grupos seja minimizada. 
+ 
+# Nível de Corte ----
+# Para interpretar os resultados precisamos antes definir um nível de corte, que vai nos dizer quantos grupos existem. Os principais é pela Reamostragem (bootstrap) e pelo método heurístico
+
+# Dados de Abundância ----
+# Se os valores não forem discrepantes utilizar transformação de Hellinger, se não log1p()
+# Variáveis com diferentes escalas, transformar em Zscore para ter a média 0 e sd 1.
+
+# Pergunta - Existem grupos de espécies de anfíbios anuros com padrões de ocorrência similar ao longo das poças?
+
+# Dados Composição de espécies
+sp_compos <- ecodados::bocaina
+
+## Coeficiente de Morisita-Horn ----
+distBocaina <- vegan::vegdist(x = sp_compos, method = "horn")
+
+## Agrupamento com a função hclust e o método UPGMA
+dendro <- hclust(d = distBocaina, method = "average")
+
+## Visualizar os resultados - objetos hclust funcionam muito bem com o plot()
+plot(dendro, hang=-1, main = "Dendrograma",
+     ylab = "Similaridade (índice de Horn)",
+     xlab="", sub="")
+
+## Coeficiente de correlação cofenética
+cofresult <- cophenetic(dendro)
+cor(cofresult, distBocaina)
+
+# Um coeficiente de correlação cofenética > .7 indica uma boa representação.
+
+# Gap Statistic (método para escolher o número ótimo de clusters)
+
+library(cluster)
+library(factoextra)
+fviz_nbclust(as.matrix(distBocaina), FUN = hcut, method = "gap_stat")
+
+## Gráfico
+plot(dendro, main = "Dendrograma",
+     ylab = "Similaridade (índice de Horn)",
+     xlab="", sub="")
+k <- 10
+n <- ncol(sp_compos)
+MidPoint <- (dendro$height[n-k] + dendro$height[n-k+1]) / 2
+abline(h = MidPoint, lty=2)
+
+# Coeficiente de Distância de Chord ----
+# É indicada para dados de composição de espécies. Se transformarmos uma matriz usando a transformação Chord e depois calcularmos a distância Euclidiana, isso equivale a calcular diretamente a distância de Chord. 
+
+dist_chord <- vegan::vegdist(sp_compos, method = "chord")
+bocaina_transf <- disttransform(t(sp_compos), "chord")
+
+
+# Agrupamento hierárquico
+hc <- hclust(dist_chord, method = "average")
+
+plot(hc, hang=-1, main = "Dendrograma com valores de P",
+     ylab = "Distância Euclideana",
+     xlab="", sub="")
+pvclust::pvrect(hc)
